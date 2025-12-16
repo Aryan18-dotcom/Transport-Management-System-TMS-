@@ -1,6 +1,8 @@
 "use client"
 import Link from 'next/link';
 import { useState } from 'react'; // Import useState
+import { usePathname } from 'next/navigation'; // Import usePathname
+import { motion, AnimatePresence } from 'motion/react'; // Import motion for animations
 import {
   LayoutDashboard,
   Truck,
@@ -12,145 +14,193 @@ import {
   Settings,
   LogOut,
   Menu, // Use Menu icon for mobile toggle
-  X, // Use X icon for closing mobile menu
+  Users2, // Use X icon for closing mobile menu
 } from 'lucide-react';
 
-const sidebarLinks = [
-  { name: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
-  { name: 'Vehicles', icon: Truck, href: '/vehicles' },
-  { name: 'Drivers', icon: Users, href: '/drivers' },
-  { name: 'Trips', icon: Route, href: '/trips' },
-  { name: 'Maintenance', icon: Wrench, href: '/maintenance' },
-  { name: 'Finance', icon: DollarSign, href: '/finance' },
-  { name: 'Documents', icon: FileText, href: '/documents' },
+const mainSidebarLinks = [
+  { name: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
+  { name: 'Vehicles', icon: Truck, href: '/admin/vehicles' },
+  { name: 'Drivers', icon: Users, href: '/admin/drivers' },
+  { name: 'Trips', icon: Route, href: '/admin/trips' },
+  { name: 'Maintenance', icon: Wrench, href: '/admin/maintenance' },
+  { name: 'Finance', icon: DollarSign, href: '/admin/finance' },
+  { name: 'Documents', icon: FileText, href: '/admin/documents' },
+  { name: 'Create Employee', icon: Users2, href: '/admin/createEmployee' },
 ];
 
-export const Sidebar = () => {
+const bottomSidebarLinks = [
+  { name: 'Settings', icon: Settings, href: '/admin/settings' },
+];
+
+export const Sidebar = ({ role }) => {
   const [isOpen, setIsOpen] = useState(false); // State for mobile/desktop collapse
   const [showConfirm, setShowConfirm] = useState(false); // State for logout confirmation
-  const activePath = '/dashboard'; // Mock active path for highlighting
+  const pathname = usePathname(); // Get current pathname
 
-  // --- Utility Component for Sidebar Content (Desktop/Mobile Shared) ---
-  const NavContent = ({ onLinkClick }) => (
-    <div className="flex flex-col h-full w-full">
-      {/* Header/Logo (Mobile Close Button Added) */}
-      <div className="flex items-center justify-between h-16 p-4 border-b border-gray-100">
-        <Link href="/dashboard" className="flex items-center" onClick={onLinkClick}>
-          <Truck className="w-6 h-6 text-blue-600 mr-2" />
-          <span className="text-xl font-bold text-gray-900">TMS Admin</span>
-        </Link>
-        
-        {/* Mobile Close Button */}
-        <button 
-          onClick={onLinkClick} 
-          className="md:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-          aria-label="Close menu"
-        >
-          <X className="w-6 h-6" />
-        </button>
-      </div>
-
-      {/* Links */}
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {sidebarLinks.map((link) => {
-          const isActive = link.href === activePath;
-          const Icon = link.icon;
-          return (
-            <Link
-              key={link.name}
-              href={link.href}
-              onClick={onLinkClick} // Close menu on navigation
-              className={`flex items-center p-3 rounded-lg transition-colors ${
-                isActive
-                  ? 'bg-blue-500 text-white shadow-md'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-500'} mr-3`} />
-              <span className="text-sm font-medium">
-                {link.name}
-              </span>
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Footer/Settings/Logout */}
-      <div className="p-4 border-t border-gray-100">
-        <Link
-          href="/admin/settings"
-          onClick={onLinkClick}
-          className="flex items-center p-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-        >
-          <Settings className="w-5 h-5 text-gray-500 mr-3" />
-          <span className="text-sm font-medium">Settings</span>
-        </Link>
-        <button
-          onClick={() => { 
-            setShowConfirm(true);
+  const NavContent = ({ onLinkClick }) => {
+    const renderNavLink = (link, index) => {
+      const isActive = link.href === pathname;
+      const Icon = link.icon;
+      
+      return (
+        <motion.div
+          key={link.name}
+          className="relative"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ 
+            duration: 0.3, 
+            delay: index * 0.05,
+            ease: "easeOut"
           }}
-          className="flex items-center w-full p-3 mt-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
         >
-          <LogOut className="w-5 h-5 mr-3" />
-          <span className="text-sm font-medium">Log Out</span>
-        </button>
+          {isActive && (
+            <motion.div
+              layoutId="sidebar-active"
+              className="absolute inset-0 bg-blue-500 rounded-lg shadow-md"
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            />
+          )}
+          <Link
+            href={link.href}
+            onClick={onLinkClick}
+            className={`flex items-center p-3 rounded-lg transition-colors relative z-10 ${
+              isActive
+                ? 'text-white'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-500'} mr-3`} />
+            <span className="text-sm font-medium">
+              {link.name}
+            </span>
+          </Link>
+        </motion.div>
+      );
+    };
+
+    return (
+      <div className="flex flex-col h-screen w-full">
+        {/* Header/Logo */}
+        <motion.div 
+          className="flex items-center h-16 p-4 border-b border-gray-100"
+          layoutId="sidebar-logo"
+        >
+          <Link href="/admin/dashboard" className="flex items-center" onClick={onLinkClick}>
+            <Truck className="w-6 h-6 text-blue-600 mr-2" />
+            <span className="text-xl font-bold text-gray-900">TMS Admin</span>
+          </Link>
+        </motion.div>
+
+        {/* Main Navigation Links */}
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto relative">
+          {mainSidebarLinks.map((link, index) => renderNavLink(link, index))}
+        </nav>
+
+        {/* Divider */}
+        <motion.div 
+          className="mx-4 border-t border-gray-200"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 0.4, delay: 0.6 }}
+        ></motion.div>
+
+        {/* Bottom Section - Settings and Logout */}
+        <div className="p-4 space-y-1">
+          {bottomSidebarLinks.map((link, index) => renderNavLink(link, mainSidebarLinks.length + index))}
+          
+          <motion.button
+            onClick={() => {
+              setShowConfirm(true);
+            }}
+            className="flex items-center w-full p-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ 
+              duration: 0.3, 
+              delay: mainSidebarLinks.length * 0.05 + bottomSidebarLinks.length * 0.05 + 0.1
+            }}
+          >
+            <LogOut className="w-5 h-5 mr-3" />
+            <span className="text-sm font-medium">Log Out</span>
+          </motion.button>
+        </div>
       </div>
-    </div>
-  );
-  // --- End Utility Component ---
+    );
+  };
 
   return (
     <>
-      {/* 1. DESKTOP/TABLET Sidebar (Fixed width, provides padding for content) */}
-      {/* The main fixed sidebar ensures content alignment on md/lg screens */}
-      <div className="h-screen w-64 hidden md:block relative">
-        {/* Fixed Content Container */}
-        <div className="flex flex-col w-65 h-full fixed top-0 overflow-y-auto bg-white border-r border-gray-200 shadow-md transition-all duration-300">
-          <NavContent onLinkClick={() => {}} /> {/* Desktop content, no closing action needed */}
-        </div>
-      </div>
-      
-      {/* 2. MOBILE HEADER (Visible on sm/xs screens) */}
-      <div className='md:hidden flex items-center justify-between w-full h-20 px-4 bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40'>
+      {/* Mobile Navbar - Only visible on mobile */}
+      <motion.div 
+        className='lg:hidden flex items-center justify-between w-full h-16 px-4 bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40'
+      >
         {/* Logo */}
-        <Link href="/dashboard" className="flex items-center">
+        <Link href="/admin/dashboard" className="flex items-center">
           <Truck className="w-6 h-6 text-blue-600 mr-2" />
-          <span className="text-xl font-bold text-gray-900">TMS Admin</span>
+          <span className="text-xl font-bold text-gray-900">TMS</span>
         </Link>
-        
+
         {/* Menu Toggle Button */}
-        <button 
+        <motion.button
           onClick={() => setIsOpen(true)}
-          className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+          className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer"
           aria-label="Open menu"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
           <Menu className="w-6 h-6" />
-        </button>
+        </motion.button>
+      </motion.div>
+
+      {/* Desktop Sidebar - Only visible on md and up */}
+      <div className='hidden lg:flex md:flex-col md:h-screen md:w-64 bg-white border-r border-gray-200 shadow-md flex-shrink-0 sticky inset-0'>
+        <NavContent onLinkClick={() => {}} />
       </div>
 
-      {/* 3. MOBILE OVERLAY (Visible only when isOpen is true) */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-black opacity-50"
-            onClick={() => setIsOpen(false)} 
-            aria-hidden="true" 
-          />
+      {/* Mobile Overlay Sidebar */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className="fixed inset-0 z-50 h-screen"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {/* Backdrop */}
+            <motion.div
+              className="absolute inset-0 bg-black"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              onClick={() => setIsOpen(false)}
+              aria-hidden="true"
+            />
 
-          {/* Sidebar Panel (Sliding effect from the left) */}
-          <div className={`
-            absolute top-0 left-0 h-full w-65 bg-white shadow-2xl transition-transform duration-300 ease-in-out
-            ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-          `}>
-            <NavContent onLinkClick={() => setIsOpen(false)} />
-          </div>
-        </div>
-      )}
-      
+            {/* Sidebar Panel */}
+            <motion.div
+              className="absolute top-0 left-0 h-screen w-64 bg-white shadow-2xl"
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 300, 
+                damping: 30,
+                mass: 0.8,
+              }}
+            >
+              <NavContent onLinkClick={() => setIsOpen(false)} />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Logout Confirmation Modal */}
       {showConfirm && (
-        <div className="fixed inset-0 -z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full mx-4">
             <h2 className="text-lg font-semibold text-gray-900 mb-4 text-center">Confirm Logout</h2>
             <p className="text-gray-600 mb-6 text-center">Are you sure you want to logout?</p>
@@ -158,7 +208,7 @@ export const Sidebar = () => {
               <button
                 onClick={() => {
                   setShowConfirm(false);
-                  window.location.href = '/userAuth/logout';
+                  window.location.href = '/login';
                 }}
                 className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
               >

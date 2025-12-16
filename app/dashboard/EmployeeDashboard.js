@@ -1,7 +1,7 @@
 "use client"
 import { Truck, FileText, DollarSign, TrendingDown, LayoutDashboard } from 'lucide-react';
-import { StatCard } from '../utils/StatCard';
 import React from 'react'; // Ensure React is imported for functional component
+import { StatCard } from '../utils/StatCard';
 
 const recentTrips = [
   { id: 1, truck: 'MH-12-AB-1234', from: 'Mumbai', to: 'Delhi', date: '2025-12-14', amount: 28000, status: 'Completed' },

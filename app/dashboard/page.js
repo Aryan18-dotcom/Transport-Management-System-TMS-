@@ -1,11 +1,11 @@
 "use client"
 import { useRouter } from 'next/navigation';
-import AdminDashboard from './AdminDashboard';
 import EmployeeDashboard from './EmployeeDashboard';
-import { requireAuth } from '../utils/auth';
 import { useEffect, useState } from 'react';
-import Loader from '../utils/Loader';
+import AdminDashboard from '../admin/dashboard/page';
 import { Sidebar } from '../components/dashboard/adminSideBar';
+import Loader from '../utils/Loader';
+import { requireAuth } from '../utils/auth';
 
 const DashboardPage = () => {
     const router = useRouter();
@@ -53,7 +53,7 @@ const DashboardPage = () => {
         // 
         <div className='flex flex-col md:flex-row w-full min-h-screen bg-neutral-50'>
             {/* Sidebar should be common or adjust based on role prop */}
-            <Sidebar role={role} /> 
+            <Sidebar role={"dashboard"} /> 
             
             <main className="flex-1 p-4 md:p-8">
                 {renderDashboard()}

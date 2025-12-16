@@ -45,18 +45,26 @@ const Login = () => {
         },
         body: JSON.stringify(formData),
       });
+      
 
       const data = await response.json();
 
       if (response.status === 200) {
         toast.success(data.message || "Login successful!");
         resetForm();
-        router.push('/dashboard');
+        if (data.user["role"]){
+          router.push('/admin/dashboard');
+        } else if (data.user["employee"]){
+          router.push('/employee/dashboard')
+        } else {
+          toast.error("We cant get your Role, thus Login Again.");
+        }
       } else {
         toast.error(data.message || "Login failed.");
         resetForm();
       }
     } catch (err) {
+      console.log(err);
       toast.error("Network error. Please check your connection and try again.");
       resetForm();
     } finally {
